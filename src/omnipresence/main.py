@@ -8,8 +8,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-
-def get():
+def get(agent_name: str = ""):
+  
     """Get current user's presence record from API.
 
     Makes a GET request to the omnipresence API endpoint to retrieve the
@@ -19,6 +19,7 @@ def get():
     :rtype: dict
     :raises requests.exceptions.RequestException: If the API request fails
     """
+
     response = Request(
         method="GET",
         url=f"{os.getenv('API_URL')}:{os.getenv('API_PORT')}/v1/omnipresence",
@@ -27,7 +28,8 @@ def get():
     return response.json()
 
 
-def post():
+
+def post(agent_name: str = ""):
     """Create new presence record for current user.
 
     Posts a new presence record to the omnipresence API for the currently
@@ -38,6 +40,7 @@ def post():
     :rtype: bool
     :raises requests.exceptions.RequestException: If the API request fails
     """
+
     response = Request(
         method="POST",
         url=f"{os.getenv('API_URL')}:{os.getenv('API_PORT')}/v1/omnipresence/",
@@ -47,12 +50,12 @@ def post():
             "working_dir": os.getcwd(),
         },
     )()
+    
     if response.status_code == 201:
         return True
     return False
 
-
-def patch(data: dict = {}):
+def patch(agent_name: str = "", data: dict = {}):
     """Update existing presence record.
 
     Updates an existing presence record in the omnipresence API with new data
@@ -78,8 +81,7 @@ def patch(data: dict = {}):
         return True
     return False
 
-
-def report():
+def report(agent_name: str = ""):
     """Update existing record or create new one.
 
     Gets current presence data and either updates existing record
@@ -89,11 +91,9 @@ def report():
     :rtype: None
     :raises requests.exceptions.RequestException: If API requests fail
     """
-
-    # authenticate
-
+    data = get(agent_name)
     data = get()
     if len(data) == 1:
-        patch(data[0])
+        patch(agent_name, data[0])
     if len(data) == 0:
-        post()
+        post(agent_name)

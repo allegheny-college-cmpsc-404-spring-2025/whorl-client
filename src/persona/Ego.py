@@ -7,6 +7,7 @@ from rich.console import Console
 from rich.markdown import Markdown
 from request import Request
 from dotenv import load_dotenv
+from omnipresence import report
 
 load_dotenv()
 
@@ -32,13 +33,26 @@ class Ego:
         self.archetype = type
         self.named = name or type
         self.chatterbox = False
+
+        # report persona presence
+        if self.archetype:
+            self.report_persona_presence()
+
         is_registered = Request(
             method="GET",
             url=f"{os.getenv('API_URL')}:{os.getenv('API_PORT')}/v1/persona/search/{type}",
         )()
+
         if is_registered.status_code == 200 and mode == "talk":
             self.behave()
             sys.exit(0)
+
+    def report_persona_presence(self):
+        """Report the presence of the persona to the omnipresence system."""
+        try:
+            report(self.named)
+        except requests.exceptions.RequestException as e:
+            print(f"Error connecting to API: {e}")
 
     def __str__(self):
         """Query the persona API to see if there is a object description.

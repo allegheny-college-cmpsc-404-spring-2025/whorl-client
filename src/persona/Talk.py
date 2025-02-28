@@ -21,12 +21,13 @@ class Talk:
             mod = types.ModuleType(persona)
             with open(persona, "r") as fh:
                 data = fh.read()
-            exec(data, mod)
+            exec(data, mod.__dict__)
             getattr(mod, persona)()
         except NotAnEgo:
             console = Console()
             console.print(Markdown(f"> But {persona} isn't sentient!"))
         except Exception as e:
+            print(e)
             console = Console()
             block = f"> You try to talk to {persona}, but they're not here!"
             console.print(Markdown(block))
