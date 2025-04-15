@@ -6,6 +6,7 @@ import getpass
 import importlib
 
 from .specs import ItemSpec
+from .specs.BackpackSpec import BackpackSpec
 
 class Instance:
     """A class to handle item instances in the inventory system.
@@ -107,6 +108,10 @@ class Instance:
             "consumable": "item_consumable",
             "version": "item_version"
         }
+        # Handle BackpackSpec-specific properties
+        if isinstance(instance, BackpackSpec):
+            self.transmit["item_capacity"] = instance.capacity
+            self.transmit["item_contents"] = instance.list_contents()
         # TODO: Fix for translation table above
         for prop in dir(instance):
             value = getattr(instance, prop)
