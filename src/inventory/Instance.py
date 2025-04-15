@@ -80,9 +80,15 @@ class Instance:
             # Test if the object correctly inherits system specifications
             # in the MRO
             if not ItemSpec in self.mod.__mro__:
-                raise
+                raise Exception(f"{filename} does not inherit from ItemSpec!")
+
+            # Additional validation for BackpackSpec
+            instance = self.mod()
+            if isinstance(instance, BackpackSpec):
+                if not hasattr(instance, "capacity") or not hasattr(instance, "list_contents"):
+                    raise Exception(f"{filename} is a BackpackSpec but is missing required attributes!")
         except Exception as e:
-            print(f"{filename} is not a valid item!")
+            print(f"{filename} is not a valid item! Error: {e}")
             self.valid = False
 
     def __enumerate_properties(self) -> None:
