@@ -1,5 +1,8 @@
 import re
 import sys
+import os
+import yaml
+
 
 class ItemSpec:
     """Base class for defining item specifications in the inventory system.
@@ -22,7 +25,7 @@ class ItemSpec:
     actions = {}
     consumable = True
 
-    def __init__(self, filename):
+    def __init__(self, filename, meta_file=None):
         """Initialize an ItemSpec instance.
 
         Args:
@@ -35,6 +38,21 @@ class ItemSpec:
         self.modname = filename.split(".")[0]
         self.modname = self.modname.split("/")[-1]
         self.__set_cli_flags()
+
+        # load the meta file if it exists
+        self.meta = {}
+
+    # If meta_file is not provided, try to find it in the standard location
+        if meta_file is None:
+            meta_file = os.path.join(os.path.dirname(filename), "meta.yml")
+
+    # load the meta file if it exists
+        if os.path.exists(meta_file):
+            try:
+                with open(meta_file, 'r') as file:
+                    self.meta = yaml.safe_load(file)
+            except Exception as e:
+                print(f"Error loading meta.yml: {e}")
 
     def __set_cli_flags(self):
         """Parse command line arguments and set them as object attributes.
