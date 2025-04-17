@@ -43,12 +43,12 @@ def create_item_module(directory, item_name, author, version):
 
     template = f'''import os
 import sys
-from ItemSpec import ItemSpec
+from inventory.specs import ItemSpec
 
 
 class {class_name}(ItemSpec):
     """
-    {item_name} implementation.
+    {item_name}
 
     Author: {author}
     Version: {version}
@@ -68,8 +68,6 @@ class {class_name}(ItemSpec):
             nice_name = self.meta.get('nice_name', self.modname)
         else:
             nice_name = self.modname
-
-        print(f"You use the {{nice_name}}.")
 '''
 
     with open(file_path, "w", encoding="utf-8") as file:
@@ -80,9 +78,9 @@ class {class_name}(ItemSpec):
 
 
 def create_init_file(directory, item_name):
-    """Create an __init__.py file in the item directory."""
+    """Create an __main__.py file in the item directory."""
     class_name = snake_to_camel(item_name)
-    init_path = os.path.join(directory, "__init__.py")
+    init_path = os.path.join(directory, "__main__.py")
 
     init_content = f"""# This file marks this directory as a Python package
 from .{item_name} import {class_name}
@@ -112,7 +110,7 @@ def prompt_user_for_metadata():
     version = input("Version number [1.0.0]: ").strip() or "1.0.0"
     default_nice_name = item_name.replace('_', ' ').title()
     nice_name = input(f"Display name [{default_nice_name}]: ").strip() or default_nice_name
-    
+
     description = input("Item description: ").strip()
     if not description:
         sys.exit("Error: Description is required")
