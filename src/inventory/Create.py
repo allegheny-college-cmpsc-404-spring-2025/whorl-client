@@ -77,22 +77,6 @@ class {snake_to_camel(class_name)}(ItemSpec):
     return file_path
 
 
-def create_init_file(directory, item_name):
-    """Create an __main__.py file in the item directory."""
-    class_name = snake_to_camel(item_name)
-    init_path = os.path.join(directory, "__main__.py")
-
-    init_content = f"""# This file marks this directory as a Python package
-from .{snake_to_camel(item_name)} import {snake_to_camel(class_name)}
-"""
-
-    with open(init_path, "w", encoding="utf-8") as file:
-        file.write(init_content)
-
-    print(f"Created __init__.py in {directory}")
-    return init_path
-
-
 def prompt_user_for_metadata():
     """Prompt the user for the metadata of the item."""
     print("\n=== Whorl Item Creation Wizard ===\n")
@@ -173,7 +157,6 @@ def cmd():
     directory = create_item_directory(item_name)
     meta_path = create_meta_yaml(directory, metadata)
     module_path = create_item_module(directory, item_name, metadata["author"], metadata["version"])
-    init_path = create_init_file(directory, item_name)
 
     # show summary and next steps
     print("\n=== Item Creation Complete ===")
@@ -181,9 +164,7 @@ def cmd():
     print("Files created:")
     print(f"  - {meta_path}")
     print(f"  - {module_path}")
-    print(f"  - {init_path}")
 
     print("\nNext steps:")
     print(f"1. Review and customize the item behavior in {module_path}")
     print(f"2. Add the item to your inventory with: get {item_name}/{item_name}.py")
-
