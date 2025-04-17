@@ -83,7 +83,7 @@ def create_init_file(directory, item_name):
     init_path = os.path.join(directory, "__main__.py")
 
     init_content = f"""# This file marks this directory as a Python package
-from .{item_name} import {class_name}
+from .{snake_to_camel(item_name)} import {snake_to_camel(class_name)}
 """
 
     with open(init_path, "w", encoding="utf-8") as file:
