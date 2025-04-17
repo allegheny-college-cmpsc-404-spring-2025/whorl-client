@@ -118,7 +118,7 @@ def prompt_user_for_metadata():
     return item_name, metadata
 
 
-def main():
+def cmd():
     parser = argparse.ArgumentParser(description="Create a new item for the Whorl inventory system")
     parser.add_argument("--name", help="Item name")
     parser.add_argument("--author", help="Author name")
@@ -159,4 +159,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    cmd()
