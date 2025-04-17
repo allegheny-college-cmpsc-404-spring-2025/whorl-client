@@ -37,8 +37,8 @@ def create_meta_yaml(directory, metadata):
 
 def create_item_module(directory, item_name, author, version):
     """Create a Python module for the item."""
-    class_name = snake_to_camel(item_name)
-    file_name = f"{item_name}.py"
+    class_name = item_name
+    file_name = f"{snake_to_camel(item_name)}.py"
     file_path = os.path.join(directory, file_name)
 
     template = f'''import os
@@ -46,17 +46,17 @@ import sys
 from inventory.specs import ItemSpec
 
 
-class {class_name}(ItemSpec):
+class {snake_to_camel(class_name)}(ItemSpec):
     """
-    {item_name}
+    {item_name}.
 
     Author: {author}
     Version: {version}
     """
-    def __init__(self, filename):
-        dir_path = os.path.dirname(os.path.abspath(filename))
+    def __init__(self):
+        dir_path = os.path.dirname(os.path.abspath(__name__))
         meta_file = os.path.join(dir_path, "meta.yml")
-        super().__init__(filename, meta_file)
+        super().__init__(__name__, meta_file)
 
     def __str__(self) -> str:
         if hasattr(self, 'meta') and self.meta and "description" in self.meta:
