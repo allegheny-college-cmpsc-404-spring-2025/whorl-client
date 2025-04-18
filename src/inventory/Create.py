@@ -35,6 +35,26 @@ def create_meta_yaml(directory, metadata):
     return meta_path
 
 
+def create_meta_py(directory, metadata):
+    """Create a meta.py file in the item directory."""
+    meta_path = os.path.join(directory, "meta.py")
+
+    with open(meta_path, "w", encoding="utf-8") as file:
+        file.write("# Auto-generated metadata for the item\n")
+        file.write("metadata = {\n")
+        for key, value in metadata.items():
+            if isinstance(value, str):
+                file.write(f'    "{key}": "{value}",\n')
+            elif isinstance(value, list):
+                file.write(f'    "{key}": {value},\n')
+            else:
+                file.write(f'    "{key}": {value},\n')
+        file.write("}\n")
+
+    print(f"Created meta.py in {directory}")
+    return meta_path
+
+
 def create_item_module(directory, item_name, author, version):
     """Create a Python module for the item."""
     class_name = item_name
@@ -156,6 +176,7 @@ def cmd():
     # create all necessary files
     directory = create_item_directory(item_name)
     meta_path = create_meta_yaml(directory, metadata)
+    meta_py_path = create_meta_py(directory, metadata)
     module_path = create_item_module(directory, item_name, metadata["author"], metadata["version"])
 
     # show summary and next steps
@@ -163,6 +184,7 @@ def cmd():
     print(f"Item '{item_name}' created successfully!")
     print("Files created:")
     print(f"  - {meta_path}")
+    print(f"  - {meta_py_path}")
     print(f"  - {module_path}")
 
     print("\nNext steps:")
