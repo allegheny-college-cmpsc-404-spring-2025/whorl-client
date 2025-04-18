@@ -24,17 +24,6 @@ def create_item_directory(item_name):
     return dir_name
 
 
-def create_meta_yaml(directory, metadata):
-    """Create a meta.yml file in the item directory."""
-    meta_path = os.path.join(directory, "meta.yml")
-
-    with open(meta_path, "w", encoding="utf-8") as file:
-        yaml.dump(metadata, file, default_flow_style=False)
-
-    print(f"Created meta.yml in {directory}")
-    return meta_path
-
-
 def create_meta_py(directory, metadata):
     """Create a meta.py file in the item directory."""
     meta_path = os.path.join(directory, "meta.py")
@@ -75,7 +64,7 @@ class {snake_to_camel(class_name)}(ItemSpec):
     """
     def __init__(self):
         dir_path = os.path.dirname(os.path.abspath(__name__))
-        meta_file = os.path.join(dir_path, "meta.yml")
+        meta_file = os.path.join(dir_path, "meta.py")
         super().__init__(__name__, meta_file)
 
     def __str__(self) -> str:
@@ -175,7 +164,6 @@ def cmd():
 
     # create all necessary files
     directory = create_item_directory(item_name)
-    meta_path = create_meta_yaml(directory, metadata)
     meta_py_path = create_meta_py(directory, metadata)
     module_path = create_item_module(directory, item_name, metadata["author"], metadata["version"])
 
@@ -183,7 +171,6 @@ def cmd():
     print("\n=== Item Creation Complete ===")
     print(f"Item '{item_name}' created successfully!")
     print("Files created:")
-    print(f"  - {meta_path}")
     print(f"  - {meta_py_path}")
     print(f"  - {module_path}")
 
