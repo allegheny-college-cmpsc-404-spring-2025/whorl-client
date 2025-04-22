@@ -5,8 +5,7 @@ import inspect
 import getpass
 import importlib
 
-from .specs import ItemSpec
-from .specs.BackpackSpec import BackpackSpec
+from .specs import ItemSpec, BackpackSpec
 
 class Instance:
     """A class to handle item instances in the inventory system.
@@ -81,7 +80,6 @@ class Instance:
             # in the MRO
             if not ItemSpec in self.mod.__mro__:
                 raise Exception(f"{filename} does not inherit from ItemSpec!")
-
             # Additional validation for BackpackSpec
             instance = self.mod()
             if isinstance(instance, BackpackSpec):
@@ -99,7 +97,7 @@ class Instance:
 
         :return: None
         :rtype: None
-        
+
         **Note**:
             Properties are mapped according to to_transmit dictionary
         """

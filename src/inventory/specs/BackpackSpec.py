@@ -11,7 +11,9 @@ class BackpackSpec(ItemSpec):
         contents (list): List of items currently stored in the backpack.
     """
 
-    def __init__(self, filename, capacity=5):
+    capacity = 2
+
+    def __init__(self, filename: str = ""):
         """Initialize a BackpackSpec instance.
 
         Args:
@@ -19,7 +21,6 @@ class BackpackSpec(ItemSpec):
             capacity (int): Maximum number of items the backpack can hold.
         """
         super().__init__(filename)
-        self.capacity = capacity
         self.contents = []
 
     def add_item(self, item):
