@@ -191,6 +191,3 @@ def cmd():
         print(f"Successfully created package: {output_path}")
     except Exception as e:
         print(f"Error: {str(e)}")
-        if os.environ.get("WHORL_DEBUG"):
-            traceback.print_exc()
-        exit(1)
