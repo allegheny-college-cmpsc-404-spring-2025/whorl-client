@@ -1,3 +1,4 @@
+"""Packager module for creating .pyz packages from item directories"""
 import os
 import sys
 import argparse
@@ -5,8 +6,7 @@ import zipapp
 import shutil
 import tempfile
 import importlib.util
-from typing import List, Dict, Optional
-import traceback
+from typing import Optional
 
 
 class Packager:
