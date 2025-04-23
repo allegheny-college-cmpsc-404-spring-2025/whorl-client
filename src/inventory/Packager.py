@@ -5,7 +5,8 @@ import zipapp
 import shutil
 import tempfile
 import importlib.util
-from typing import List, Dict, Optional, Any
+from typing import List, Dict, Optional
+import traceback
 
 
 class Packager:
@@ -19,7 +20,7 @@ class Packager:
     def __init__(self, directory: str, output_dir: Optional[str] = None):
         """
         Initialize the packager for an item directory
-        
+
         Args:
             directory: Path to the directory containing the item
             output_dir: Where to place the packaged file (default: current directory)
@@ -46,25 +47,25 @@ class Packager:
                 f"Missing required files in {self.directory}: {', '.join(missing)}"
             )
 
-        # Validate meta.py can be imported and has metadata
+        # validate meta.py can be imported and has metadata
         meta_path = os.path.join(self.directory, "meta.py")
         try:
             spec = importlib.util.spec_from_file_location("meta", meta_path)
             meta = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(meta)
-            
+
             if not hasattr(meta, "metadata") or not isinstance(meta.metadata, dict):
                 raise ValueError(f"meta.py must define a 'metadata' dictionary")
         except Exception as e:
             raise ValueError(f"Invalid meta.py file: {str(e)}")
 
-        # Validate main module can be imported
+        # validate main module can be imported
         module_path = os.path.join(self.directory, f"{self.module_name}.py")
         try:
             spec = importlib.util.spec_from_file_location(self.module_name, module_path)
             module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(module)
-            
+
             class_exists = hasattr(module, self.module_name)
             if not class_exists:
                 raise ValueError(f"Module must contain a class named '{self.module_name}'")
@@ -74,12 +75,12 @@ class Packager:
     def _prepare_staging_area(self) -> None:
         """Create a temporary directory and copy files for packaging"""
         self.temp_dir = tempfile.mkdtemp()
-        
-        # Copy all files from source directory
+
+        # copy all files from source directory
         for item in os.listdir(self.directory):
             src_path = os.path.join(self.directory, item)
             dst_path = os.path.join(self.temp_dir, item)
-            
+
             if os.path.isfile(src_path):
                 shutil.copy2(src_path, dst_path)
             elif os.path.isdir(src_path):
@@ -92,15 +93,15 @@ class Packager:
 
         with open(module_path, "r", encoding="utf-8") as f:
             content = f.read()
-        
-        # Only add if not already present (using more robust check)
+
+        # only add if not already present (using more robust check)
         if f"if __name__ == '__main__'" not in content:
             with open(module_path, "a", encoding="utf-8") as f:
                 f.write(entrypoint_code)
 
     def _get_python_executable(self) -> str:
         """Get the appropriate Python executable path for the current system"""
-        # Use sys.executable for cross-platform compatibility
+        # use sys.executable
         return sys.executable
 
     def _cleanup(self) -> None:
@@ -112,36 +113,36 @@ class Packager:
     def package(self, force: bool = False) -> str:
         """
         Create the .pyz archive
-        
+
         Args:
             force: If True, overwrite existing package with same name
-            
+
         Returns:
             Absolute path to the created package
         """
         try:
-            # Ensure output directory exists
+            # ensure output directory exists
             os.makedirs(self.output_dir, exist_ok=True)
-            
-            # Check if output file already exists
+
+            # check if output file already exists
             if os.path.exists(self.pyz_path) and not force:
                 raise FileExistsError(
                     f"Output file {self.pyz_path} already exists. Use force=True to overwrite."
                 )
-            
-            # Validate the source directory
+
+            # validate the source directory
             self._validate_structure()
-            
-            # Create a staging area
+
+            # create a staging area
             self._prepare_staging_area()
-            
-            # Add entrypoint if needed
+
+            # add entrypoint if needed
             self._add_entrypoint()
-            
+
             # Get the Python interpreter path
             python_executable = self._get_python_executable()
-            
-            # Create the pyz archive
+
+            # creare the pyz archive
             zipapp.create_archive(
                 source=self.temp_dir,
                 target=self.pyz_path,
@@ -149,14 +150,14 @@ class Packager:
                 interpreter=python_executable,
                 compressed=True
             )
-            
+
             return self.pyz_path
-            
+
         except Exception as e:
-            # Re-raise with more context
+            # re-raise with more context
             raise RuntimeError(f"Failed to package {self.directory}: {str(e)}") from e
         finally:
-            # Always clean up temporary files
+            # always clean up temporary files!
             self._cleanup()
 
 
@@ -178,7 +179,7 @@ def cmd():
         action="store_true",
         help="Overwrite existing package if it exists"
     )
-    
+
     args = parser.parse_args()
 
     try:
@@ -188,10 +189,5 @@ def cmd():
     except Exception as e:
         print(f"Error: {str(e)}")
         if os.environ.get("WHORL_DEBUG"):
-            import traceback
             traceback.print_exc()
         exit(1)
-
-
-if __name__ == "__main__":
-    cmd()
