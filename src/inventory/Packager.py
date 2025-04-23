@@ -25,11 +25,14 @@ class Packager:
             directory: Path to the directory containing the item
             output_dir: Where to place the packaged file (default: current directory)
         """
+        # strip the trailing slashes from the directory path (idk if this is ideal in the longterm)
+        directory = directory.rstrip('/\\')
         self.directory = os.path.abspath(directory)
         self.module_name = self.snake_to_camel(os.path.basename(directory))
         self.output_dir = output_dir or os.getcwd()
         self.pyz_path = os.path.join(self.output_dir, f"{self.module_name}.pyz")
-        self.temp_dir = None  # For staging files before packaging
+        # this is for staging files before packaging
+        self.temp_dir = None
 
     def _validate_structure(self) -> None:
         """Ensure directory has required files and valid content"""
