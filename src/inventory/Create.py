@@ -3,6 +3,7 @@ import sys
 import yaml
 import argparse
 from datetime import datetime
+from inventory.Packager import Packager
 
 
 def snake_to_camel(name):
@@ -141,6 +142,7 @@ def cmd():
     parser.add_argument("--name", help="Item name")
     parser.add_argument("--author", help="Author name")
     parser.add_argument("--non-interactive", action="store_true", help="Run in non-interactive mode")
+    parser.add_argument("--no-package", action="store_true", help="Skip creating .pyz package")
     args = parser.parse_args()
 
     if args.non_interactive:
@@ -174,6 +176,21 @@ def cmd():
     print(f"  - {meta_py_path}")
     print(f"  - {module_path}")
 
+    # Package the item into a .pyz file unless --no-package is specified
+    if not args.no_package:
+        try:
+            packager = Packager(directory)
+            package_path = packager.package()
+            print(f"\nPackaged item: {package_path}")
+        except Exception as e:
+            print(f"\nWarning: Could not package item: {str(e)}")
+            print("You can manually package it later using the 'package' command.")
+
     print("\nNext steps:")
-    print(f"1. Review and customize the item behavior in {module_path}")
-    print(f"2. Add the item to your inventory with: get {item_name}/{item_name}.py")
+    if not args.no_package:
+        print(f"1. Review and customize the item behavior in {module_path}")
+        print(f"2. Add the item to your inventory with: get {package_path}")
+    else:
+        print(f"1. Review and customize the item behavior in {module_path}")
+        print(f"2. Package the item with: package {directory}")
+        print(f"3. Add the item to your inventory with: get {item_name}/{item_name}.py")
