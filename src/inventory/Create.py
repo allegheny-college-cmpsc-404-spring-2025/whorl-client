@@ -44,6 +44,25 @@ def create_meta_py(directory, metadata):
     return meta_path
 
 
+def create_item_main(directory, item_name):
+    """Create a __main__.py file for packaged item execution."""
+    main_path = os.path.join(directory, "__main__.py")
+    module_name = snake_to_camel(item_name)
+
+    template = f'''# -*- coding: utf-8 -*-
+import {module_name}
+import meta
+
+{module_name}.{module_name}()
+'''
+
+    with open(main_path, "w", encoding="utf-8") as file:
+        file.write(template)
+
+    print(f"Created __main__.py in {directory}")
+    return main_path
+
+
 def create_item_module(directory, item_name, author, version):
     """Create a Python module for the item."""
     class_name = item_name
@@ -167,6 +186,7 @@ def cmd():
     directory = create_item_directory(item_name)
     meta_py_path = create_meta_py(directory, metadata)
     module_path = create_item_module(directory, item_name, metadata["author"], metadata["version"])
+    main_path = create_item_main(directory, item_name)
 
     # show summary and next steps
     print("\n=== Item Creation Complete ===")
@@ -174,6 +194,7 @@ def cmd():
     print("Files created:")
     print(f"  - {meta_py_path}")
     print(f"  - {module_path}")
+    print(f"  - {main_path}")
 
     # Package the item into a .pyz file unless --no-package is specified
     if not args.no_package:

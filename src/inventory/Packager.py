@@ -149,7 +149,6 @@ class Packager:
             zipapp.create_archive(
                 source=self.temp_dir,
                 target=self.pyz_path,
-                main=f"{self.module_name}:{self.module_name}",
                 interpreter=python_executable,
                 compressed=True
             )
