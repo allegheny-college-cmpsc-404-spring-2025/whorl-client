@@ -1,6 +1,7 @@
 import os
 from inventory.specs import BackpackSpec
 
+
 class Backpack(BackpackSpec):  # Capitalized class name
     """A custom backpack class extending BackpackSpec."""
 
@@ -11,4 +12,5 @@ class Backpack(BackpackSpec):  # Capitalized class name
 
     def __str__(self):
         """Return a string representation of the backpack."""
+        self.display()
         return f"Custom Backpack (Capacity: {self.capacity}, Contents: {self.list_contents()})"

@@ -7,6 +7,7 @@ import importlib
 
 from .specs import ItemSpec, BackpackSpec
 
+
 class Instance:
     """A class to handle item instances in the inventory system.
 
@@ -83,8 +84,12 @@ class Instance:
             # Additional validation for BackpackSpec
             instance = self.mod()
             if isinstance(instance, BackpackSpec):
-                if not hasattr(instance, "capacity") or not hasattr(instance, "list_contents"):
-                    raise Exception(f"{filename} is a BackpackSpec but is missing required attributes!")
+                if not hasattr(instance, "capacity") or not hasattr(
+                    instance, "list_contents"
+                ):
+                    raise Exception(
+                        f"{filename} is a BackpackSpec but is missing required attributes!"
+                    )
         except Exception as e:
             print(f"{filename} is not a valid item! Error: {e}")
             self.valid = False
@@ -101,16 +106,22 @@ class Instance:
         **Note**:
             Properties are mapped according to to_transmit dictionary
         """
-        self.transmit = {
-            "item_owner": os.getenv("GITHUB_USER") or getpass.getuser(),
-            "item_qty": 1,
-        }
         instance = self.mod()
+        if isinstance(instance, BackpackSpec):
+            self.transmit = {
+                "item_owner": instance.id,
+                "item_qty": 1,
+            }
+        else:
+            self.transmit = {
+                "item_owner": os.getenv("GITHUB_USER") or getpass.getuser(),
+                "item_qty": 1,
+            }
         to_transmit = {
-            "modname" : "item_name",
+            "modname": "item_name",
             "volume": "item_weight",
             "consumable": "item_consumable",
-            "version": "item_version"
+            "version": "item_version",
         }
         # Handle BackpackSpec-specific properties
         if isinstance(instance, BackpackSpec):

@@ -1,10 +1,15 @@
 import os
+
+from Instance import Instance
+
 from .ItemSpec import ItemSpec
 import requests
 from rich.console import Console
 from rich.table import Table
 
 from request import Request
+
+console = Console()
 
 
 class BackpackSpec(ItemSpec):
@@ -59,7 +64,7 @@ class BackpackSpec(ItemSpec):
 
         return response
 
-    def add_item(self, item):
+    def __add_item(self, item):
         """Add an item to the backpack.
 
         Args:
@@ -74,7 +79,7 @@ class BackpackSpec(ItemSpec):
         print("Backpack is full!")
         return False
 
-    def remove_item(self, item_name):
+    def __remove_item(self, item_name):
         """Remove an item from the backpack by name.
 
         Args:
@@ -98,7 +103,7 @@ class BackpackSpec(ItemSpec):
         """
         return [item.modname for item in self.contents]
 
-    def display(self):
+    def __display(self):
         """Return a string representation of the backpack.
 
         Returns:
@@ -129,4 +134,35 @@ class BackpackSpec(ItemSpec):
         for item in context:
             values = [str(item[field]) for field in item if field in allowed]
             table.add_row(*values)
-        Console().print(table)
+        console.print(table)
+
+    def __get(self):
+        instance = Instance()
+        response = Request(
+            method="POST",
+            url=f"{os.getenv('API_URL')}:{os.getenv('API_PORT')}/v1/inventory/add/",
+            data=instance.transmit,
+            files={"item_binary": instance.binary},
+        )()
+        if response.status_code == 409:
+            context = response.json()
+            print(context["error"])
+
+    def use(self):
+        options = {"add", "drop", "use"}
+        self.__display()
+        mode = ""
+        while mode not in options:
+            mode = input(
+                """To add an item: Type 'add' in terminal   
+To drop and item: Type 'drop' in terminal
+To use an item: Type 'use' in terminal\n Input: """
+            )
+            if mode not in options:
+                console.print("\n[red][ERROR] [/red]Invalid input try again\n")
+        if mode == "add":
+            print("add")
+        elif mode == "drop":
+            print("drop")
+        else:
+            print("use")
