@@ -150,7 +150,7 @@ class Packager:
                 source=self.temp_dir,
                 target=self.pyz_path,
                 interpreter=python_executable,
-                compressed=True
+                # compressed=True
             )
 
             return self.pyz_path
