@@ -15,6 +15,7 @@ class Request:
     various HTTP methods (GET, POST, PATCH, DELETE, PUT) with consistent authentication
     and error handling.
     """
+
     def __init__(
         self, method: str, url: str, files={}, data: Dict = {}, headers: Dict = {}
     ):
@@ -33,7 +34,7 @@ class Request:
         self.files = files
         self.__create_auth_header()
 
-    def __call__(self) -> requests.Response:
+    def __call__(self, raise_error: bool = True) -> requests.Response:
         """Execute HTTP request with specified method and handle response.
 
         Makes the HTTP request using the appropriate method, handles authentication,
@@ -46,18 +47,21 @@ class Request:
         response: requests.Response = getattr(
             self, f"_Request__{self.method.lower()}"
         )()
-        try:
-            response.raise_for_status()
-            # LOGIN IS TRUE
-            false_login_file(False)
+        if raise_error:
+            try:
+                response.raise_for_status()
+                # LOGIN IS TRUE
+                false_login_file(False)
+                return response
+            except requests.HTTPError as e:
+                if response.status_code == 403:
+                    # LOGIN IS FALSE
+                    false_login_file(True)
+                print(f"Something went wrong: {e}")
+                sys.exit(1)
+                # workspaces
+        else:
             return response
-        except requests.HTTPError as e:
-            if response.status_code == 403:
-                # LOGIN IS FALSE
-                false_login_file(True)
-            print(f"Something went wrong: {e}")
-            sys.exit(1)
-            # workspaces
 
     def __create_auth_header(self):
         """Create authentication headers using GitHub token.
@@ -176,7 +180,7 @@ def false_login_file(should_add: bool = True) -> Path:
 
         if should_add:
             # Create empty file
-            with open(login_false_file, 'w') as f:
+            with open(login_false_file, "w") as f:
                 pass
         else:
             # Remove file if it exists
