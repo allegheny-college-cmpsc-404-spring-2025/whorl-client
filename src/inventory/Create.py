@@ -1,6 +1,5 @@
 import os
 import sys
-import yaml
 import argparse
 from datetime import datetime
 from inventory.Packager import Packager
