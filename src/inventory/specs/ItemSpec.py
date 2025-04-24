@@ -25,7 +25,7 @@ class ItemSpec:
     actions = {}
     consumable = True
 
-    def __init__(self, filename, meta_file):
+    def __init__(self, filename):
         """Initialize an ItemSpec instance.
 
         Args:
