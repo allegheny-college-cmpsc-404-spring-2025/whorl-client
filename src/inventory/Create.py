@@ -90,12 +90,6 @@ class {snake_to_camel(class_name)}(ItemSpec):
         if hasattr(self, 'meta') and self.meta and "description" in self.meta:
             return self.meta["description"]
         return f"A {{self.modname}} with no special properties."
-
-    def use(self, **kwargs) -> None:
-        if hasattr(self, 'meta'):
-            nice_name = self.meta.get('nice_name', self.modname)
-        else:
-            nice_name = self.modname
 '''
 
     with open(file_path, "w", encoding="utf-8") as file:
