@@ -5,6 +5,7 @@ import base64
 import pennant
 import requests
 import zipfile
+import getpass  # Add this import
 from request import Request
 
 from .Instance import Instance
@@ -38,12 +39,66 @@ class Acquisition:
         """
         # Accommodate multiple files; acquire each serially
         for file in sys.argv[1:]:
-            instance = Instance(file)
-            self.__transmit_to_api(instance)
+            # this is the handling for .pyz files
+            if file.endswith('.pyz'):
+                self.__handle_pyz_file(file)
+            else:
+                instance = Instance(file)
+                self.__transmit_to_api(instance)
+
+    def __handle_pyz_file(self, pyz_file):
+        """Handle a .pyz file by sending it directly to the API.
+
+        :param pyz_file: Path to the .pyz file
+        :type pyz_file: str
+        :return: None
+        """
+        if not os.path.exists(pyz_file):
+            print(f"Error: {pyz_file} not found!")
+            return
+
+        try:
+            # get the item name from the filename
+            item_name = os.path.basename(pyz_file).split('.')[0]
+
+            # create basic item properties
+            data = {
+                "item_name": item_name,
+                "item_owner": os.getenv("GITHUB_USER") or getpass.getuser(),
+                "item_weight": 1,
+                "item_qty": 1,
+                "item_consumable": True,
+                "item_version": "1.0.0",
+                "item_type": "pyz"
+            }
+
+            # read the file as binary
+            with open(pyz_file, 'rb') as f:
+                buffer = io.BytesIO(f.read())
+
+            # send it to the API
+            response = Request(
+                method="POST",
+                url=f"{os.getenv('API_URL')}:{os.getenv('API_PORT')}/v1/inventory/add/",
+                data=data,
+                files={"item_binary": buffer},
+            )()
+
+            # this is my debuggin code, remove later
+            if response.status_code == 200:
+                print(f"Successfully added {item_name} to inventory!")
+            elif response.status_code == 409:
+                context = response.json()
+                print(context["error"])
+            else:
+                print(f"Failed to add {item_name} to inventory! Status code: {response.status_code}")
+                
+        except Exception as e:
+            print(f"Error processing {pyz_file}: {str(e)}")
 
     def __compress_file(self, instance: dict = {}) -> str:
         """Compress file into an actual zip archive, rather than just a single
-           item or folder
+        item or folder
 
         :param instance: Instance object containing item data and binary content
         """
