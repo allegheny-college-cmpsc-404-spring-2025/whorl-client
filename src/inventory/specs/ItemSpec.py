@@ -38,21 +38,36 @@ class ItemSpec:
         self.modname = filename.split(".")[0]
         self.modname = self.modname.split("/")[-1]
         self.__set_cli_flags()
+        
+        # Get the absolute path of this item, especially if in a .pyz file
+        self.absolute_path = self.get_absolute_path()
 
-        # DEPRECATED: 24 April; handled at the item level
+    def get_absolute_path(self):
+        """Get the absolute path of the item file.
 
-        # if meta_file is not provided, try to find it in the standard location
-        # if not os.path.exists(meta_file):
-        #    raise FileNotFoundError(f"Meta file {meta_file} not found.")
+        Resolves the absolute path of the item, specifically handling .pyz archives.
 
-        # load the meta file and open it
-        # try:
-        #     spec = importlib.util.spec_from_file_location("meta", meta_file)
-        #     meta = importlib.util.module_from_spec(spec)
-        #     spec.loader.exec_module(meta)
-        #     self.meta = meta.metadata
-        # except Exception as e:
-        #     raise RuntimeError(f"Failed to load meta file {meta_file}: {e}") from e
+        Returns:
+            str: Absolute path to the item file or containing .pyz
+        """
+        # check if any path in sys.path contains .pyz
+        for path in sys.path:
+            if '.pyz' in path and os.path.exists(path):
+                return os.path.abspath(path)
+
+        # check current module's __file__ attribute
+        current_module = sys.modules.get(self.__class__.__module__)
+        if current_module and hasattr(current_module, '__file__') and '.pyz' in current_module.__file__:
+            pyz_path = current_module.__file__.split('.pyz')[0] + '.pyz'
+            if os.path.exists(pyz_path):
+                return os.path.abspath(pyz_path)
+
+        # check sys.argv as fallback
+        if len(sys.argv) > 0 and sys.argv[0].endswith('.pyz'):
+            return os.path.abspath(sys.argv[0])
+
+        # Otherwise, return the normal path
+        return os.path.abspath(self.filename)
 
     def __set_cli_flags(self):
         """Parse command line arguments and set them as object attributes.
