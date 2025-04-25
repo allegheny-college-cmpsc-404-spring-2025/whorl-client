@@ -43,6 +43,7 @@ class Instance:
         :raises FileNotFoundError: If item file does not exist
         """
         self.valid = True
+        self.bag = False
         self.__validate_file(filename)
         try:
             self.source = inspect.getsource(self.object)
@@ -83,7 +84,8 @@ class Instance:
                 raise Exception(f"{filename} does not inherit from ItemSpec!")
             # Additional validation for BackpackSpec
             instance = self.mod()
-            if isinstance(instance, BackpackSpec):
+            if BackpackSpec in self.mod.__mro__:
+                self.bag = True
                 if not hasattr(instance, "capacity") or not hasattr(
                     instance, "list_contents"
                 ):
@@ -106,10 +108,10 @@ class Instance:
         **Note**:
             Properties are mapped according to to_transmit dictionary
         """
-        instance = self.mod()
-        if isinstance(instance, BackpackSpec):
+
+        if os.getenv("INPACK"):
             self.transmit = {
-                "item_owner": instance.id,
+                "item_owner": os.getenv("INPACK"),
                 "item_qty": 1,
             }
         else:
@@ -117,6 +119,7 @@ class Instance:
                 "item_owner": os.getenv("GITHUB_USER") or getpass.getuser(),
                 "item_qty": 1,
             }
+        instance = self.mod()
         to_transmit = {
             "modname": "item_name",
             "volume": "item_weight",

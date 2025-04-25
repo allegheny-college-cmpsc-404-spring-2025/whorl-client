@@ -53,7 +53,9 @@ class Dropped:
             url=f"{os.getenv('API_URL')}:{os.getenv('API_PORT')}/v1/inventory/reduce/",
             data={
                 "item_name": item_name,
-                "item_owner": os.getenv("GITHUB_USER") or getpass.getuser(),
+                "item_owner": os.getenv("INPACK")
+                if os.getenv("INPACK")
+                else os.getenv("GITHUB_USER") or getpass.getuser(),
                 "item_drop": True,
             },
         )()

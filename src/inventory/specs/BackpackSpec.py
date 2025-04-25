@@ -1,5 +1,5 @@
 import os
-
+import subprocess
 from .ItemSpec import ItemSpec
 import requests
 from rich.console import Console
@@ -103,19 +103,27 @@ class BackpackSpec(ItemSpec):
             table.add_row(*values)
         console.print(table)
 
-    def __get(self):
-        response = Request(
-            method="POST",
-            url=f"{os.getenv('API_URL')}:{os.getenv('API_PORT')}/v1/inventory/add/",
-        )()
-        if response.status_code == 409:
-            context = response.json()
-            print(context["error"])
-    
+    def __get(self, filename):
+        subprocess.call(["get", filename])
+
+    def __drop_item(self, item_name: str = "") -> None:
+        """Drop a single item from inventory and create a local file.
+
+        :param item_name: Name of item to drop
+        :type item_name: str, optional
+        :return: None
+        :rtype: None
+        :raises requests.exceptions.RequestException: If the API request fails
+        :raises IOError: If there are issues writing the file
+        """
+
+        subprocess.call(["drop", item_name])
+
     def use(self):
         options = {"add", "drop", "use"}
         self.__display()
         mode = ""
+        os.environ["INPACK"] = self.id
         while mode not in options:
             mode = input(
                 """To add an item: Type 'add' in terminal   
@@ -126,7 +134,11 @@ To use an item: Type 'use' in terminal\n Input: """
                 console.print("\n[red][ERROR] [/red]Invalid input try again\n")
         if mode == "add":
             print("add")
+            filename = input("Input Filename")
+            self.__get(filename)
         elif mode == "drop":
+            item_name = input("Input ItemName")
+            self.__drop_item(item_name)
             print("drop")
         else:
             print("use")
