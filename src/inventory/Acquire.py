@@ -1,8 +1,10 @@
+import io
 import os
 import sys
 import base64
 import pennant
 import requests
+import zipfile
 from request import Request
 
 from .Instance import Instance
@@ -39,6 +41,18 @@ class Acquisition:
             instance = Instance(file)
             self.__transmit_to_api(instance)
 
+    def __compress_file(self, instance: dict = {}) -> str:
+        """Compress file into an actual zip archive, rather than just a single
+           item or folder
+
+        :param instance: Instance object containing item data and binary content
+        """
+        buffer = io.BytesIO()
+        binary = instance.binary
+        with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED, False) as fh:
+            fh.writestr(instance.name, io.BytesIO(instance.binary))
+        return buffer
+
     def __transmit_to_api(self, instance: dict = {}) -> None:
         """Transmit an item instance to the inventory API.
 
@@ -52,7 +66,7 @@ class Acquisition:
             method="POST",
             url=f"{os.getenv('API_URL')}:{os.getenv('API_PORT')}/v1/inventory/add/",
             data=instance.transmit,
-            files={"item_binary": instance.binary},
+            files={"item_binary": self.__compress_file(instance)},
         )()
         if response.status_code == 409:
             context = response.json()
