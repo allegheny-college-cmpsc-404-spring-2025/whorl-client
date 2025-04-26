@@ -7,6 +7,7 @@ import importlib
 
 from .specs import ItemSpec
 
+
 class Instance:
     """A class to handle item instances in the inventory system.
 
