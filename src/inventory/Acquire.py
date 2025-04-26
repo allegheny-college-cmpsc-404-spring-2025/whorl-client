@@ -5,10 +5,14 @@ import base64
 import pennant
 import requests
 import zipfile
-import getpass  # Add this import
+import getpass
+import importlib
+import tempfile
+import shutil
 from request import Request
 
 from .Instance import Instance
+from .specs import ItemSpec
 from .Exceptions import *
 
 from dotenv import load_dotenv
@@ -41,12 +45,18 @@ class Acquisition:
         for file in sys.argv[1:]:
             # this is the handling for .pyz files
             if file.endswith('.pyz'):
-                self.__handle_pyz_file(file)
+                if self.__validate_pyz_file(file):
+                    self.__handle_pyz_file(file)
+                else:
+                    # validation failed message already printed
+                    pass
             else:
                 instance = Instance(file)
-                self.__transmit_to_api(instance)
+                # only transmit if validation passed
+                if instance.valid:
+                    self.__transmit_to_api(instance)
 
-    def __handle_pyz_file(self, pyz_file):
+    def __validate_pyz_file(self, pyz_file):
         """Handle a .pyz file by sending it directly to the API.
 
         :param pyz_file: Path to the .pyz file
@@ -55,7 +65,67 @@ class Acquisition:
         """
         if not os.path.exists(pyz_file):
             print(f"Error: {pyz_file} not found!")
-            return
+            return False
+
+        # get expected item name from filename (without .pyz extension)
+        item_name = os.path.basename(pyz_file).split('.')[0]
+
+        # create a temporary directory to extract and check the .pyz contents
+        temp_dir = tempfile.mkdtemp()
+        try:
+            # extract and check the contents
+            with zipfile.ZipFile(pyz_file, 'r') as zipf:
+                zipf.extractall(temp_dir)
+
+            # add the temp directory to sys.path so we can import
+            sys.path.insert(0, temp_dir)
+
+            try:
+                # try to import the main module with same name as the .pyz file
+                try:
+                    module = importlib.import_module(item_name)
+                except ImportError as e:
+                    print(f"Error: Cannot import module '{item_name}' from {pyz_file}: {e}")
+                    return False
+
+                # check if it has a class with the same name (matching Instance validation)
+                if not hasattr(module, item_name):
+                    print(f"Error: Module '{item_name}' does not contain a class named '{item_name}'")
+                    return False
+
+                # get the class and check if it inherits from ItemSpec
+                item_class = getattr(module, item_name)
+                if not issubclass(item_class, ItemSpec):
+                    print(f"Error: Class '{item_name}' must inherit from ItemSpec")
+                    return False
+
+                # check if it has a use method (matching Instance validation)
+                try:
+                    instance = item_class()
+                    if not hasattr(instance, 'use'):
+                        print(f"Error: Class '{item_name}' must have a 'use' method")
+                        return False
+                except Exception as e:
+                    print(f"Error: Failed to instantiate '{item_name}' class: {e}")
+                    return False
+
+                # valudaion passed!
+                return True
+
+            except Exception as e:
+                print(f"Error validating {pyz_file}: {e}")
+                return False
+
+        finally:
+            # clean up by removing the temporary directory and path
+            if temp_dir in sys.path:
+                sys.path.remove(temp_dir)
+            shutil.rmtree(temp_dir)
+
+        return False
+
+    def __handle_pyz_file(self, pyz_file):
+        """Handle a .pyz file by sending it directly to the API."""
 
         try:
             # get the item name from the filename
