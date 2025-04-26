@@ -25,11 +25,12 @@ class ItemSpec:
     actions = {}
     consumable = True
 
-    def __init__(self, filename):
+    def __init__(self, filename, meta_file=None):
         """Initialize an ItemSpec instance.
 
         Args:
             filename (str): Path to the item's source file
+            meta_file (str, optional): Path to metadata file if specified
 
         Note:
             Extracts modname from filename and sets CLI flags
@@ -38,9 +39,13 @@ class ItemSpec:
         self.modname = filename.split(".")[0]
         self.modname = self.modname.split("/")[-1]
         self.__set_cli_flags()
-        
-        # Get the absolute path of this item, especially if in a .pyz file
+
+        # get the absolute path of this item, especially if in a .pyz file
         self.absolute_path = self.get_absolute_path()
+
+        # if meta_file is provided, load it
+        if meta_file and os.path.exists(meta_file):
+            self.load_metadata(meta_file)
 
     def get_absolute_path(self):
         """Get the absolute path of the item file.
@@ -66,7 +71,7 @@ class ItemSpec:
         if len(sys.argv) > 0 and sys.argv[0].endswith('.pyz'):
             return os.path.abspath(sys.argv[0])
 
-        # Otherwise, return the normal path
+        # otherwise, return the normal path
         return os.path.abspath(self.filename)
 
     def __set_cli_flags(self):
