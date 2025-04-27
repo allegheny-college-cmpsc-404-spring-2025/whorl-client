@@ -4,8 +4,10 @@ import sys
 import types
 import base64
 import getpass
+import zipfile
 import requests
 import importlib
+
 from request import Request
 
 from dotenv import load_dotenv
@@ -78,7 +80,19 @@ class Usage:
         :rtype: None
         :raises ValueError: If binary data cannot be decoded
         """
-        self.source = bytes.fromhex(item_record["item_bytestring"]).decode("utf-8")
+
+        # Reference implementation from Acquire
+        # buffer = io.BytesIO()
+        # binary = instance.binary.read()
+        # with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED, False) as fh:
+        #     fh.writestr(instance.name, binary)
+        # return buffer.getvalue().hex()
+        source = bytes.fromhex(item_record["item_bytestring"]).decode("utf-8")
+        memory = io.BytesIO()
+        fh = zipfile.ZipFile(memory, "a")
+        fh.writestr(f"{self.item_name}.pyz", source)
+        fh.close()
+        self.source = memory.getvalue()
 
     def __use_item(self):
         """Execute an item's use functionality and update inventory.

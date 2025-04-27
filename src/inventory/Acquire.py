@@ -15,7 +15,6 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-
 class Acquisition:
     """A class to handle acquiring and transmitting new items to the inventory system.
 
@@ -53,7 +52,7 @@ class Acquisition:
         binary = instance.binary.read()
         with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED, False) as fh:
             fh.writestr(instance.name, binary)
-        return buffer
+        return buffer.getvalue().hex()
 
     def __transmit_to_api(self, instance: dict = {}) -> None:
         """Transmit an item instance to the inventory API.
