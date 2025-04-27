@@ -3,11 +3,11 @@ import os
 import sys
 import types
 import base64
-import zipapp
 import getpass
 import zipfile
 import requests
 import importlib
+import tempfile
 
 from request import Request
 
@@ -89,14 +89,19 @@ class Usage:
         fh.writestr(item, zip_bytestring)
         fh.close()
         # Read the zipped buffer and unpack?
-        contents = None
         with zipfile.ZipFile(buffer) as fh:
             with fh.open(item) as z:
                 # This is the ZIP data
                 archive = bytes.fromhex(z.read().decode("utf-8"))
                 with zipfile.ZipFile(io.BytesIO(archive)) as zf:
-                    contents = zf.read(zf.namelist()[0])
-        print(contents) # This is the real PYZ
+                    self.source = zf.read(zf.namelist()[0]) # The actual PYZ
+        # TODO: Do we need a temporary file location to dump and load the file? What
+        #       would this complicate? Restrict? Afford?
+        with tempfile.TemporaryDirectory() as dir:
+            path = os.path.join(dir, item)
+            with open(path, "wb") as fh:
+               fh.write(self.source)
+            print(path)
 
     def __use_item(self):
         """Execute an item's use functionality and update inventory.

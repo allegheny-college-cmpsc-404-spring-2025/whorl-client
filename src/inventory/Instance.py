@@ -68,7 +68,7 @@ class Instance:
         :raises AttributeError: If required attributes are missing
         """
         try:
-            # Split name into module name using absolute path; system rules 
+            # Split name into module name using absolute path; system rules
             # dictate that enclosing files and classes share the same name
             self.name = filename.split("/")[-1].split(".")[0]
             sys.path.insert(0, filename)
