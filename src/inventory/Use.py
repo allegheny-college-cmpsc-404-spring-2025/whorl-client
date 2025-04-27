@@ -3,6 +3,7 @@ import os
 import sys
 import types
 import base64
+import zipapp
 import getpass
 import zipfile
 import requests
@@ -80,19 +81,22 @@ class Usage:
         :rtype: None
         :raises ValueError: If binary data cannot be decoded
         """
-
-        # Reference implementation from Acquire
-        # buffer = io.BytesIO()
-        # binary = instance.binary.read()
-        # with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED, False) as fh:
-        #     fh.writestr(instance.name, binary)
-        # return buffer.getvalue().hex()
-        source = bytes.fromhex(item_record["item_bytestring"]).decode("utf-8")
-        memory = io.BytesIO()
-        fh = zipfile.ZipFile(memory, "a")
-        fh.writestr(f"{self.item_name}.pyz", source)
+        buffer = io.BytesIO()
+        item = f"{self.item_name}.pyz" # Replace self.item_name with this?
+        zip_bytestring = bytes.fromhex(item_record["item_bytestring"]).decode("utf-8")
+        # Write to memory buffer, though this seems unnecessary
+        fh = zipfile.ZipFile(buffer, "w")
+        fh.writestr(item, zip_bytestring)
         fh.close()
-        self.source = memory.getvalue()
+        # Read the zipped buffer and unpack?
+        contents = None
+        with zipfile.ZipFile(buffer) as fh:
+            with fh.open(item) as z:
+                # This is the ZIP data
+                archive = bytes.fromhex(z.read().decode("utf-8"))
+                with zipfile.ZipFile(io.BytesIO(archive)) as zf:
+                    contents = zf.read(zf.namelist()[0])
+        print(contents) # This is the real PYZ
 
     def __use_item(self):
         """Execute an item's use functionality and update inventory.
