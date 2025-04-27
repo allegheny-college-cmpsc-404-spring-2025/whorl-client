@@ -173,9 +173,13 @@ class Acquisition:
         :param instance: Instance object containing item data and binary content
         """
         buffer = io.BytesIO()
-        binary = instance.binary
+        # read the binary data from the file
+        binary_data = instance.binary.read()
         with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED, False) as fh:
-            fh.writestr(instance.name, io.BytesIO(instance.binary))
+            # write the actual bytes
+            fh.writestr(instance.name, binary_data)
+        # reset file pointer in case it's used again
+        instance.binary.seek(0)
         return buffer
 
     def __transmit_to_api(self, instance: dict = {}) -> None:
