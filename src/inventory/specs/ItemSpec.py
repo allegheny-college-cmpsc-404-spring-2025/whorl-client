@@ -47,6 +47,24 @@ class ItemSpec:
         if meta_file and os.path.exists(meta_file):
             self.load_metadata(meta_file)
 
+    def load_metadata(self, meta_file):
+        """Load metadata from a file.
+        
+        Args:
+            meta_file (str): Path to the metadata file
+            
+        Returns:
+            None
+        """
+        try:
+            spec = importlib.util.spec_from_file_location("meta", meta_file)
+            meta = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(meta)
+            if hasattr(meta, "metadata") and isinstance(meta.metadata, dict):
+                self.meta = meta.metadata
+        except Exception as e:
+            print(f"Error loading metadata from {meta_file}: {str(e)}")
+
     def get_absolute_path(self):
         """Get the absolute path of the item file.
 
