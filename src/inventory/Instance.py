@@ -68,9 +68,10 @@ class Instance:
         :raises AttributeError: If required attributes are missing
         """
         try:
-            # Split name into module name; system rules dictate
-            # that enclosing files and classes share the same name
-            self.name = filename.split(".")[0]
+            # Split name into module name using absolute path; system rules 
+            # dictate that enclosing files and classes share the same name
+            self.name = filename.split("/")[-1].split(".")[0]
+            sys.path.insert(0, filename)
             self.object = importlib.import_module(self.name)
             # We can't actually call the use method because it may
             # destroy some objects. Could we copy it briefly?
@@ -81,7 +82,8 @@ class Instance:
             if not ItemSpec in self.mod.__mro__:
                 raise
         except Exception as e:
-            print(f"{filename} is not a valid item!")
+            print(e)
+            print(f"{self.name} is not a valid item!")
             self.valid = False
 
     def __enumerate_properties(self) -> None:

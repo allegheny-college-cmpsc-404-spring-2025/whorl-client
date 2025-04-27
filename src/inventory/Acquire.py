@@ -2,6 +2,7 @@ import io
 import os
 import sys
 import base64
+import pathlib
 import pennant
 import requests
 import zipfile
@@ -38,7 +39,8 @@ class Acquisition:
         """
         # Accommodate multiple files; acquire each serially
         for file in sys.argv[1:]:
-            instance = Instance(file)
+            path = os.path.abspath(file)
+            instance = Instance(path)
             self.__transmit_to_api(instance)
 
     def __compress_file(self, instance: dict = {}) -> str:
@@ -48,9 +50,9 @@ class Acquisition:
         :param instance: Instance object containing item data and binary content
         """
         buffer = io.BytesIO()
-        binary = instance.binary
+        binary = instance.binary.read()
         with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED, False) as fh:
-            fh.writestr(instance.name, io.BytesIO(instance.binary))
+            fh.writestr(instance.name, binary)
         return buffer
 
     def __transmit_to_api(self, instance: dict = {}) -> None:

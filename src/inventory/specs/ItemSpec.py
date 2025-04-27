@@ -39,21 +39,6 @@ class ItemSpec:
         self.modname = self.modname.split("/")[-1]
         self.__set_cli_flags()
 
-        # DEPRECATED: 24 April; handled at the item level
-
-        # if meta_file is not provided, try to find it in the standard location
-        # if not os.path.exists(meta_file):
-        #    raise FileNotFoundError(f"Meta file {meta_file} not found.")
-
-        # load the meta file and open it
-        # try:
-        #     spec = importlib.util.spec_from_file_location("meta", meta_file)
-        #     meta = importlib.util.module_from_spec(spec)
-        #     spec.loader.exec_module(meta)
-        #     self.meta = meta.metadata
-        # except Exception as e:
-        #     raise RuntimeError(f"Failed to load meta file {meta_file}: {e}") from e
-
     def __set_cli_flags(self):
         """Parse command line arguments and set them as object attributes.
 
