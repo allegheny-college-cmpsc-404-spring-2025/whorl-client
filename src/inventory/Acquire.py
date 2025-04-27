@@ -1,9 +1,9 @@
 import io
 import os
 import sys
-import base64
-import pennant
-import requests
+# import base64
+# import pennant
+# import requests
 import zipfile
 import getpass
 import importlib
@@ -13,7 +13,7 @@ from request import Request
 
 from .Instance import Instance
 from .specs import ItemSpec
-from .Exceptions import *
+from .Exceptions import InvalidCommandException, InvalidArgumentsException
 
 from dotenv import load_dotenv
 
@@ -80,42 +80,36 @@ class Acquisition:
             # add the temp directory to sys.path so we can import
             sys.path.insert(0, temp_dir)
 
+            # import the module directly to validate it
             try:
-                # try to import the main module with same name as the .pyz file
-                try:
-                    module = importlib.import_module(item_name)
-                except ImportError as e:
-                    print(f"Error: Cannot import module '{item_name}' from {pyz_file}: {e}")
-                    return False
+                module = importlib.import_module(item_name)
 
-                # check if it has a class with the same name (matching Instance validation)
+                # check if the module has a class with the same name
                 if not hasattr(module, item_name):
-                    print(f"Error: Module '{item_name}' does not contain a class named '{item_name}'")
+                    print(f"Error: {item_name} module does not contain {item_name} class")
                     return False
 
-                # get the class and check if it inherits from ItemSpec
+                # get the class from the module
                 item_class = getattr(module, item_name)
+
+                # Check if the class inherits from ItemSpec
                 if not issubclass(item_class, ItemSpec):
-                    print(f"Error: Class '{item_name}' must inherit from ItemSpec")
+                    print(f"Error: {item_name} class does not inherit from ItemSpec")
                     return False
 
-                # check if it has a use method (matching Instance validation)
-                try:
-                    instance = item_class()
-                    if not hasattr(instance, 'use'):
-                        print(f"Error: Class '{item_name}' must have a 'use' method")
-                        return False
-                except Exception as e:
-                    print(f"Error: Failed to instantiate '{item_name}' class: {e}")
+                # check if the class has a use method
+                if not hasattr(item_class, 'use'):
+                    print(f"Error: {item_name} class does not have a use method")
                     return False
 
-                # valudaion passed!
                 return True
-
-            except Exception as e:
-                print(f"Error validating {pyz_file}: {e}")
+            except ImportError:
+                print(f"Error: Could not import {item_name} module")
                 return False
 
+        except Exception as e:
+            print(f"Error validating {pyz_file}: {e}")
+            return False
         finally:
             # clean up by removing the temporary directory and path
             if temp_dir in sys.path:
