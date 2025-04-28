@@ -3,6 +3,7 @@ import os
 import sys
 import types
 import base64
+import pathlib
 import getpass
 import zipfile
 import requests
@@ -97,12 +98,16 @@ class Usage:
                     self.source = zf.read(zf.namelist()[0]) # The actual PYZ
         # TODO: Do we need a temporary file location to dump and load the file? What
         #       would this complicate? Restrict? Afford?
+        #       Here's one issue: after dir goes out of scope, the library cleans
+        #       up the directory (i.e. we lose it); so, we need to get this object
+        #       in memory pronto.
         with tempfile.TemporaryDirectory() as dir:
             path = os.path.join(dir, item)
+            sys.path.insert(0, path)
             with open(path, "wb") as fh:
-               fh.write(self.source)
-            print(path)
-
+                # Ideally, this _would not_ be self.source
+                fh.write(self.source)
+            self.instance = Instance(path)
     def __use_item(self):
         """Execute an item's use functionality and update inventory.
 
@@ -112,7 +117,7 @@ class Usage:
         :raises requests.exceptions.RequestException: If inventory update fails
         """
         mod = types.ModuleType(self.item_name)
-        exec(self.source, mod.__dict__)
+        exec(self.instance.source, mod.__dict__)
         getattr(mod, self.item_name)().use()
         status = Request(
             "PATCH",

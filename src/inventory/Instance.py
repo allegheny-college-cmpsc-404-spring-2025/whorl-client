@@ -94,7 +94,7 @@ class Instance:
 
         :return: None
         :rtype: None
-        
+
         **Note**:
             Properties are mapped according to to_transmit dictionary
         """
