@@ -9,7 +9,6 @@ from request import Request
 
 console = Console()
 
-
 class BackpackSpec(ItemSpec):
     """
     Represents a backpack item in the inventory system.
@@ -35,10 +34,9 @@ class BackpackSpec(ItemSpec):
         super().__init__(filename)
         self.id = id
         result = self.__setup_pack()
-        print(result)
 
     def __setup_pack(self):
-        print(self.id)
+        """Sets up the backpack by making an API request to initialize its state."""
         try:
             response = Request(
                 method="POST",
@@ -64,11 +62,7 @@ class BackpackSpec(ItemSpec):
         return response
 
     def __display(self):
-        """Return a string representation of the backpack.
-
-        Returns:
-            str: Description of the backpack and its contents.
-        """
+        """Displays the contents of the backpack in a tabular format."""
         allowed = ["item_name", "item_qty", "item_bulk", "item_consumable"]
         api_request = Request(
             method="GET",
@@ -97,29 +91,23 @@ class BackpackSpec(ItemSpec):
         console.print(table)
 
     def __get(self, filename):
+        """Retrieves an item from the inventory and stores it locally."""
         os.environ["INPACK"] = self.id
         subprocess.call(["get", filename])
 
     def __drop_item(self, item_name: str = "") -> None:
-        """Drop a single item from inventory and create a local file.
-
-        :param item_name: Name of item to drop
-        :type item_name: str, optional
-        :return: None
-        :rtype: None
-        :raises requests.exceptions.RequestException: If the API request fails
-        :raises IOError: If there are issues writing the file
-        """
+        """Drops a single item from the inventory and creates a local file."""
         os.environ["INPACK"] = self.id
 
         subprocess.call(["drop", item_name])
 
     def __use_item(self, item_name: str = "") -> None:
+        """Uses an item from the inventory."""
         os.environ["INPACK"] = self.id
         subprocess.call(["use", item_name])
 
     def use(self):
-        """Sets up command line Interface for backpack"""
+        """Sets up a command-line interface for interacting with the backpack."""
         options = {"add", "drop", "use"}
         self.__display()
         mode = ""
