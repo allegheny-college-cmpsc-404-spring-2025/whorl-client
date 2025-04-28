@@ -5,7 +5,6 @@ import argparse
 from datetime import datetime
 from inventory.Packager import Packager
 
-
 def snake_to_camel(name):
     """Convert snake_case to CamelCase."""
     return ''.join(word.capitalize() for word in name.split('_'))

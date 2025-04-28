@@ -39,7 +39,6 @@ class ItemSpec:
         self.modname = filename.split(".")[0]
         self.modname = self.modname.split("/")[-1]
         self.__set_cli_flags()
-
         # get the absolute path of this item, especially if in a .pyz file
         self.absolute_path = self.get_absolute_path()
 

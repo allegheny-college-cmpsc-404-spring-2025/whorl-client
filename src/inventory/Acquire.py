@@ -1,9 +1,10 @@
 import io
 import os
 import sys
-# import base64
-# import pennant
-# import requests
+import base64
+import pathlib
+import pennant
+import requests
 import zipfile
 import getpass
 import importlib
@@ -18,7 +19,6 @@ from .Exceptions import InvalidCommandException, InvalidArgumentsException
 from dotenv import load_dotenv
 
 load_dotenv()
-
 
 class Acquisition:
     """A class to handle acquiring and transmitting new items to the inventory system.
@@ -52,7 +52,6 @@ class Acquisition:
                     pass
             else:
                 instance = Instance(file)
-                # only transmit if validation passed
                 if instance.valid:
                     self.__transmit_to_api(instance)
 
@@ -172,14 +171,11 @@ class Acquisition:
         :param instance: Instance object containing item data and binary content
         """
         buffer = io.BytesIO()
-        # read the binary data from the file
-        binary_data = instance.binary.read()
+        binary = instance.binary.read()
         with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED, False) as fh:
-            # write the actual bytes
-            fh.writestr(instance.name, binary_data)
-        # reset file pointer in case it's used again
-        instance.binary.seek(0)
-        return buffer
+            fh.writestr(instance.name, binary)
+        return buffer.getvalue().hex()
+
 
     def __transmit_to_api(self, instance: dict = {}) -> None:
         """Transmit an item instance to the inventory API.
