@@ -104,7 +104,6 @@ class BackpackSpec(ItemSpec):
     def __drop_item(self, item_name: str = "") -> None:
         """Drops a single item from the inventory and creates a local file."""
         os.environ["INPACK"] = self.id
-
         subprocess.call(["drop", item_name])
 
     def __use_item(self, item_name: str = "") -> None:
@@ -117,22 +116,47 @@ class BackpackSpec(ItemSpec):
         options = {"add", "drop", "use"}
         self.__display()
         mode = ""
+
         while mode not in options:
-            mode = input(
-                """To add an item: Type 'add' in terminal   
-To drop and item: Type 'drop' in terminal
-To use an item: Type 'use' in terminal\n Input: """
-            )
-            if mode not in options:
-                console.print("\n[red][ERROR] [/red]Invalid input try again\n")
-        if mode == "add":
-            print("add")
-            filename = input("Input Filename")
-            self.__get(filename)
-        elif mode == "drop":
-            item_name = input("Input ItemName: ")
-            self.__drop_item(item_name)
-            print("drop")
-        else:
-            item_name = input("Input ItemName: ")
-            self.__use_item(item_name)
+            try:
+                mode = console.input(
+                    "\n[cyan]To add an item: Type 'add' in terminal\n"
+                    "To drop an item: Type 'drop' in terminal\n"
+                    "To use an item: Type 'use' in terminal[/cyan]\n[bold magenta]Input: [/bold magenta]"
+                ).strip().lower()
+                if mode not in options:
+                    console.print("\n[red][ERROR] Invalid input. Please try again.[/red]\n")
+            except KeyboardInterrupt:
+                console.print("\n[red][ERROR] Operation canceled by user.[/red]\n")
+                return
+            except Exception as e:
+                console.print(f"\n[red][ERROR] Unexpected error: {e}[/red]\n")
+                return
+
+        try:
+            if mode == "add":
+                filename = console.input("[cyan]Input Filename: [/cyan]").strip()
+                if not filename:
+                    raise ValueError("Filename cannot be empty.")
+                self.__get(filename)
+                console.print("[green]Item added successfully![/green]")
+            elif mode == "drop":
+                item_name = console.input("[cyan]Input Item Name: [/cyan]").strip()
+                if not item_name:
+                    raise ValueError("Item name cannot be empty.")
+                self.__drop_item(item_name)
+                console.print("[green]Item dropped successfully![/green]")
+            elif mode == "use":
+                item_name = console.input("[cyan]Input Item Name: [/cyan]").strip()
+                if not item_name:
+                    raise ValueError("Item name cannot be empty.")
+                self.__use_item(item_name)
+                console.print("[green]Item used successfully![/green]")
+        except ValueError as ve:
+            console.print(f"\n[red][ERROR] {ve}[/red]\n")
+        except KeyboardInterrupt:
+            console.print("\n[red][ERROR] Operation canceled by user.[/red]\n")
+        except requests.HTTPError as http_err:
+            console.print(f"\n[red][ERROR] HTTP error occurred: {http_err}[/red]\n")
+        except Exception as e:
+            console.print(f"\n[red][ERROR] Unexpected error: {e}[/red]\n")
