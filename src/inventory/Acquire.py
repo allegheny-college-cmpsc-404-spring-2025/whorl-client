@@ -61,7 +61,7 @@ class Acquisition:
 
         :param pyz_file: Path to the .pyz file
         :type pyz_file: str
-        :return: None
+        :return: bool
         """
         if not os.path.exists(pyz_file):
             print(f"Error: {pyz_file} not found!")
@@ -70,25 +70,31 @@ class Acquisition:
         # get expected item name from filename (without .pyz extension)
         item_name = os.path.basename(pyz_file).split('.')[0]
 
-        # create a temporary directory to extract and check the .pyz contents
+        # create a temporary directory to extract the .pyz contents
         temp_dir = tempfile.mkdtemp()
         try:
-            # extract and check the contents
+            # extract contents
             with zipfile.ZipFile(pyz_file, 'r') as zipf:
                 zipf.extractall(temp_dir)
 
-            # add the temp directory to sys.path so we can import
+            # add the temp directory to path so we can import
             sys.path.insert(0, temp_dir)
 
-            # import the module directly to validate it
+            # check if main module file exists
+            module_path = os.path.join(temp_dir, f"{item_name}.py")
+            if not os.path.exists(module_path):
+                print(f"Error: {item_name}.py not found in {pyz_file}")
+                return False
+
+            # try direct module validation first - this often works better for .pyz files
             try:
+                # import the module directly
                 module = importlib.import_module(item_name)
 
                 # check if the module has a class with the same name
                 if not hasattr(module, item_name):
                     print(f"Error: {item_name} module does not contain {item_name} class")
                     return False
-
                 # get the class from the module
                 item_class = getattr(module, item_name)
 
@@ -96,27 +102,26 @@ class Acquisition:
                 if not issubclass(item_class, ItemSpec):
                     print(f"Error: {item_name} class does not inherit from ItemSpec")
                     return False
-
                 # check if the class has a use method
                 if not hasattr(item_class, 'use'):
                     print(f"Error: {item_name} class does not have a use method")
                     return False
-
                 return True
-            except ImportError:
-                print(f"Error: Could not import {item_name} module")
-                return False
+            except ImportError as e:
+                # fall back to Instance validation if direct validation fails
+                print(f"Direct validation failed, trying Instance validation: {e}")
 
+            # Use the Instance class for validation
+            instance = Instance(module_path)
+            return instance.valid
         except Exception as e:
             print(f"Error validating {pyz_file}: {e}")
             return False
         finally:
-            # clean up by removing the temporary directory and path
+            # clean up
             if temp_dir in sys.path:
                 sys.path.remove(temp_dir)
             shutil.rmtree(temp_dir)
-
-        return False
 
     def __handle_pyz_file(self, pyz_file):
         """Handle a .pyz file by sending it directly to the API."""
