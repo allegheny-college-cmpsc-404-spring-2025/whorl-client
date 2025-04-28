@@ -11,38 +11,31 @@ console = Console()
 
 
 class BackpackSpec(ItemSpec):
-    """A class representing a backpack item in the inventory system.
+    """
+    Represents a backpack item in the inventory system.
 
-    This class extends the inventory capacity by allowing items to be stored
-    within the backpack itself.
+    This class allows for the storage of multiple items within the backpack, 
+    extending the inventory capacity.
 
     Attributes:
-        capacity (int): Maximum number of items the backpack can hold.
-        contents (list): List of items currently stored in the backpack.
+        capacity (int): The maximum number of items the backpack can hold. Defaults to 2.
+        id (str): A unique identifier for the backpack instance.
     """
 
     capacity = 2
 
     def __init__(self, filename: str = "", id: str = "12345678"):
-        """Initialize a BackpackSpec instance.
+        """
+        Initializes a BackpackSpec instance.
 
         Args:
-            filename (str): Path to the item's source file.
-            capacity (int): Maximum number of items the backpack can hold.
+            filename (str): The path to the item's source file.
+            id (str): A unique identifier for the backpack. Defaults to "12345678".
         """
         super().__init__(filename)
-        self.contents = []
         self.id = id
         result = self.__setup_pack()
         print(result)
-
-    def list_contents(self):
-        """List the contents of the backpack.
-
-        Returns:
-            list: A list of items currently in the backpack.
-        """
-        return self.contents
 
     def __setup_pack(self):
         print(self.id)
