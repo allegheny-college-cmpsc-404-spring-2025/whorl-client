@@ -1,5 +1,6 @@
 import os
 import sys
+import getpass
 import argparse
 from datetime import datetime
 from inventory.Packager import Packager
@@ -108,9 +109,8 @@ def prompt_user_for_metadata():
     if not item_name:
         sys.exit("Error: Item name is required")
 
-    author = input("Author/Username: ").strip()
-    if not author:
-        sys.exit("Error: Author is required")
+    # get username automatically
+    author = getpass.getuser()
 
     # get optional item information with defaults
     version = input("Version number [1.0.0]: ").strip() or "1.0.0"
@@ -190,7 +190,7 @@ def cmd():
     print(f"  - {module_path}")
     print(f"  - {main_path}")
 
-    # Package the item into a .pyz file unless --no-package is specified
+    # package the item into a .pyz file unless --no-package is specified
     if not args.no_package:
         try:
             packager = Packager(directory)
