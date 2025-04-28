@@ -32,8 +32,13 @@ class BackpackSpec(ItemSpec):
             id (str): A unique identifier for the backpack. Defaults to "12345678".
         """
         super().__init__(filename)
+        self.contents = [] # unused but needed for class to work
         self.id = id
         result = self.__setup_pack()
+
+    def list_contents(self):
+        """Lists the contents of the backpack. This is currently unused."""
+        return self.contents
 
     def __setup_pack(self):
         """Sets up the backpack by making an API request to initialize its state."""
