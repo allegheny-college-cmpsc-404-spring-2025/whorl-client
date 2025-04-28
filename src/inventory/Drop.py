@@ -73,7 +73,9 @@ class Dropped:
             method="POST",
             url=f"{os.getenv('API_URL')}:{os.getenv('API_PORT')}/v1/inventory/search/",
             data={
-                "charname": os.getenv("GITHUB_USER") or getpass.getuser(),
+                "charname": os.getenv("INPACK")
+                if os.getenv("INPACK")
+                else os.getenv("GITHUB_USER") or getpass.getuser(),
                 "item_name": item_name,
             },
         )()

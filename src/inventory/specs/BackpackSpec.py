@@ -104,6 +104,7 @@ class BackpackSpec(ItemSpec):
         console.print(table)
 
     def __get(self, filename):
+        os.environ["INPACK"] = self.id
         subprocess.call(["get", filename])
 
     def __drop_item(self, item_name: str = "") -> None:
@@ -116,14 +117,19 @@ class BackpackSpec(ItemSpec):
         :raises requests.exceptions.RequestException: If the API request fails
         :raises IOError: If there are issues writing the file
         """
+        os.environ["INPACK"] = self.id
 
         subprocess.call(["drop", item_name])
 
+    def __use_item(self, item_name: str = "") -> None:
+        os.environ["INPACK"] = self.id
+        subprocess.call(["use", item_name])
+
     def use(self):
+        """Sets up command line Interface for backpack"""
         options = {"add", "drop", "use"}
         self.__display()
         mode = ""
-        os.environ["INPACK"] = self.id
         while mode not in options:
             mode = input(
                 """To add an item: Type 'add' in terminal   
@@ -137,8 +143,10 @@ To use an item: Type 'use' in terminal\n Input: """
             filename = input("Input Filename")
             self.__get(filename)
         elif mode == "drop":
-            item_name = input("Input ItemName")
+            item_name = input("Input ItemName: ")
             self.__drop_item(item_name)
             print("drop")
         else:
+            item_name = input("Input ItemName: ")
+            self.__use_item()
             print("use")
