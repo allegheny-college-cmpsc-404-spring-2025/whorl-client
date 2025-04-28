@@ -47,7 +47,7 @@ class Usage:
         else:
             self.__get_info()
 
-    def __search_inventory(self, item_name: str = "") -> dict:
+    def __search_inventory(self) -> dict:
         """Search for an item in the user's inventory.
 
         :param item_name: Name of item to search for
@@ -60,7 +60,9 @@ class Usage:
             "POST",
             url=f"{os.getenv('API_URL')}:{os.getenv('API_PORT')}/v1/inventory/search/",
             data={
-                "charname": os.getenv("GITHUB_USER") or getpass.getuser(),
+                "charname": os.getenv("INPACK")
+                if os.getenv("INPACK")
+                else os.getenv("GITHUB_USER") or getpass.getuser(),
                 "item_name": self.item_name,
             },
         )()
@@ -95,7 +97,9 @@ class Usage:
             url=f"{os.getenv('API_URL')}:{os.getenv('API_PORT')}/v1/inventory/reduce/",
             data={
                 "item_name": self.item_name,
-                "item_owner": os.getenv("GITHUB_USER") or getpass.getuser(),
+                "item_owner": os.getenv("INPACK")
+                if os.getenv("INPACK")
+                else os.getenv("GITHUB_USER") or getpass.getuser(),
             },
         )()
 

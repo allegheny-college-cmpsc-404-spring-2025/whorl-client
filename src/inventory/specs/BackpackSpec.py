@@ -9,11 +9,12 @@ from request import Request
 
 console = Console()
 
+
 class BackpackSpec(ItemSpec):
     """
     Represents a backpack item in the inventory system.
 
-    This class allows for the storage of multiple items within the backpack, 
+    This class allows for the storage of multiple items within the backpack,
     extending the inventory capacity.
 
     Attributes:
@@ -32,7 +33,7 @@ class BackpackSpec(ItemSpec):
             id (str): A unique identifier for the backpack. Defaults to "12345678".
         """
         super().__init__(filename)
-        self.contents = [] # unused but needed for class to work
+        self.contents = []  # unused but needed for class to work
         self.id = id
         result = self.__setup_pack()
 
@@ -134,5 +135,4 @@ To use an item: Type 'use' in terminal\n Input: """
             print("drop")
         else:
             item_name = input("Input ItemName: ")
-            self.__use_item()
-            print("use")
+            self.__use_item(item_name)
