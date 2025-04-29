@@ -1,10 +1,15 @@
+import io
 import os
 import sys
 import types
 import base64
+import pathlib
 import getpass
+import zipfile
 import requests
 import importlib
+import tempfile
+
 from request import Request
 
 from dotenv import load_dotenv
@@ -77,8 +82,32 @@ class Usage:
         :rtype: None
         :raises ValueError: If binary data cannot be decoded
         """
-        self.source = bytes.fromhex(item_record["item_bytestring"]).decode("utf-8")
-
+        buffer = io.BytesIO()
+        item = f"{self.item_name}.pyz" # Replace self.item_name with this?
+        zip_bytestring = bytes.fromhex(item_record["item_bytestring"]).decode("utf-8")
+        # Write to memory buffer, though this seems unnecessary
+        fh = zipfile.ZipFile(buffer, "w")
+        fh.writestr(item, zip_bytestring)
+        fh.close()
+        # Read the zipped buffer and unpack?
+        with zipfile.ZipFile(buffer) as fh:
+            with fh.open(item) as z:
+                # This is the ZIP data
+                archive = bytes.fromhex(z.read().decode("utf-8"))
+                with zipfile.ZipFile(io.BytesIO(archive)) as zf:
+                    self.source = zf.read(zf.namelist()[0]) # The actual PYZ
+        # TODO: Do we need a temporary file location to dump and load the file? What
+        #       would this complicate? Restrict? Afford?
+        #       Here's one issue: after dir goes out of scope, the library cleans
+        #       up the directory (i.e. we lose it); so, we need to get this object
+        #       in memory pronto.
+        with tempfile.TemporaryDirectory() as dir:
+            path = os.path.join(dir, item)
+            sys.path.insert(0, path)
+            with open(path, "wb") as fh:
+                # Ideally, this _would not_ be self.source
+                fh.write(self.source)
+            self.instance = Instance(path)
     def __use_item(self):
         """Execute an item's use functionality and update inventory.
 
@@ -88,7 +117,7 @@ class Usage:
         :raises requests.exceptions.RequestException: If inventory update fails
         """
         mod = types.ModuleType(self.item_name)
-        exec(self.source, mod.__dict__)
+        exec(self.instance.source, mod.__dict__)
         getattr(mod, self.item_name)().use()
         status = Request(
             "PATCH",
