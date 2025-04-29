@@ -81,9 +81,7 @@ class {snake_to_camel(class_name)}(ItemSpec):
     Version: {version}
     """
     def __init__(self):
-        dir_path = os.path.dirname(os.path.abspath(__name__))
-        meta_file = os.path.join(dir_path, "meta.py")
-        super().__init__(__name__, meta_file)
+        super().__init__(__name__)
 
     def __str__(self) -> str:
         if hasattr(self, 'meta') and self.meta and "description" in self.meta:
