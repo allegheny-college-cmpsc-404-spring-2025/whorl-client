@@ -162,3 +162,23 @@ This API allows the user to interact with itself and know who is using the progr
 ## Inventory API
 
 This API has the most commands out of any of the other API folders. This API allows the user to access their inventory and with the different commands they can add to the inventory, see the info of their objects, remove items, use the items and give items away. Each of these actions are defined in a python file committed to that action.
+
+### Using a Backpack
+
+After picking up a back for example by typing `get backpack.py`
+
+type: `use backpack`
+
+```bash
+To add an item: Type 'add' in the terminal
+To drop an item: Type 'drop' in the terminal
+To use an item: Type 'use' in the terminal
+    Input: <Type your response here>
+```
+
+After typing add, drop or use. When using add type a valid Items file to add it to the pack
+Otherwise just type an item that is in the packs inventory to either drop or use it depending on what was specified.
+
+
+
+
