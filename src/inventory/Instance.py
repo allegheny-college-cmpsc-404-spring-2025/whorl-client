@@ -5,7 +5,8 @@ import inspect
 import getpass
 import importlib
 
-from .specs import ItemSpec
+from .specs import ItemSpec, BackpackSpec
+
 
 class Instance:
     """A class to handle item instances in the inventory system.
@@ -42,6 +43,7 @@ class Instance:
         :raises FileNotFoundError: If item file does not exist
         """
         self.valid = True
+        self.bag = False
         self.__validate_file(filename)
         try:
             self.source = inspect.getsource(self.object)
@@ -79,9 +81,19 @@ class Instance:
             # Test if the object correctly inherits system specifications
             # in the MRO
             if not ItemSpec in self.mod.__mro__:
-                raise
+                raise Exception(f"{filename} does not inherit from ItemSpec!")
+            # Additional validation for BackpackSpec
+            instance = self.mod()
+            if BackpackSpec in self.mod.__mro__:
+                self.bag = True
+                if not hasattr(instance, "capacity") or not hasattr(
+                    instance, "list_contents"
+                ):
+                    raise Exception(
+                        f"{filename} is a BackpackSpec but is missing required attributes!"
+                    )
         except Exception as e:
-            print(f"{filename} is not a valid item!")
+            print(f"{filename} is not a valid item! Error: {e}")
             self.valid = False
 
     def __enumerate_properties(self) -> None:
@@ -92,21 +104,32 @@ class Instance:
 
         :return: None
         :rtype: None
-        
+
         **Note**:
             Properties are mapped according to to_transmit dictionary
         """
-        self.transmit = {
-            "item_owner": os.getenv("GITHUB_USER") or getpass.getuser(),
-            "item_qty": 1,
-        }
+
+        if os.getenv("INPACK"):
+            self.transmit = {
+                "item_owner": os.getenv("INPACK"),
+                "item_qty": 1,
+            }
+        else:
+            self.transmit = {
+                "item_owner": os.getenv("GITHUB_USER") or getpass.getuser(),
+                "item_qty": 1,
+            }
         instance = self.mod()
         to_transmit = {
-            "modname" : "item_name",
+            "modname": "item_name",
             "volume": "item_weight",
             "consumable": "item_consumable",
-            "version": "item_version"
+            "version": "item_version",
         }
+        # Handle BackpackSpec-specific properties
+        if isinstance(instance, BackpackSpec):
+            self.transmit["item_capacity"] = instance.capacity
+            self.transmit["item_contents"] = instance.list_contents()
         # TODO: Fix for translation table above
         for prop in dir(instance):
             value = getattr(instance, prop)
